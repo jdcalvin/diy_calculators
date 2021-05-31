@@ -1,5 +1,4 @@
 class ShakerCalc
-
   #  ___ ___________ ___  
   # |   |           |   |
   # |   |___________|   |
@@ -12,15 +11,93 @@ class ShakerCalc
   # |___|___________|___|
   #
 
-  SIDE_WIDTH = 2.0
-  SIDE_THICKNESS = 0.75
+  # width_in ###############################
+  # -- total door width
 
-  attr_reader :width_in, :height_in
+  # height_in ##############################
+  # -- total door height
 
-  def initialize(width_in:, height_in:)
-    @width_in = width_in
-    @height_in = height_in
+  # side_width #############################
+  # -- rail/stile workpiece thickness
+
+  # side_thickness #########################
+  # -- rail/stile workpiece thickness
+  # -- cabinet doors are typically 3/4
+
+  # mortise_depth ##########################
+  # -- Joinery rules state this should typically be equal to 1/2 to 2/3 of the workpiece thickness
+  # -- In my case, I'm using a special set of mortise/tenon router bits with a defined 7/16th length
+
+  # Reference: https://www.woodmagazine.com/woodworking-how-to/joinery/mortise-tenon-joinery/rule-of-thumb-for-mortise-and-tenon-size
+
+  attr_reader :width_in, 
+              :height_in, 
+              :side_width, 
+              :side_thickness,
+              :mortise_depth
+
+  def initialize(width_in:, height_in:, side_width: 2.0, side_thickness: 0.75, mortise_depth: 7/16r.to_f)
+    @width_in = width_in.to_f
+    @height_in = height_in.to_f
+    @side_width = side_width.to_f
+    @side_thickness = side_thickness.to_f
+    @mortise_depth = mortise_depth.to_f
   end
+
+  def stile_in
+    height_in
+  end
+
+  def rail_in
+    width_in - (side_width * 2) + (tenon_length * 2)
+  end
+
+  def center_panel_dimensions
+    [
+      rail_in,
+      height_in - (side_width * 2) + (tenon_length * 2),
+    ]
+  end
+
+  def tenon_thickness
+    side_thickness / 3.to_f
+  end
+
+  def panel_thickness
+    tenon_thickness
+  end
+
+  def mortise_width
+    tenon_thickness
+  end
+
+  def tenon_length
+    # Typical joinery rules say to leave the tenon 1/16th shorter than mortise depth to allow for glue
+    # However in my experience, this requirement is negligible and the finished piece shows a 1/8th variance in width otherwise
+    mortise_depth
+  end
+
+  def total_side_length_in
+    (stile_in * 2) + (rail_in * 2)
+  end
+
+  def side_materials
+    [
+      side_width, stile_in,
+      side_width, stile_in,
+
+      side_width, rail_in,
+      side_width, rail_in,
+    ].each_slice(2).to_a
+  end
+
+  def panel_materials
+    [
+      center_panel_dimensions[0], center_panel_dimensions[1]
+    ]
+  end
+
+  # presenter methods
 
   def print
     max_length = calculations.keys.sort_by(&:size).last.size
@@ -37,110 +114,59 @@ class ShakerCalc
       'Stile Length' => stile_in,
       'Rail Length' => rail_in,
       'Mortise Depth' => mortise_depth,
-      'Tenon Length' => tenon_depth,
+      'Tenon Length' => tenon_length,
       'Tenon Thickness' => tenon_thickness,
-      'Mortise Width' => mortise_width
-      
+      'Mortise Width' => mortise_width,
+      'Side Width' => side_width,
+      'Door Thickness' => side_thickness,
+      'Center Panel Width' => center_panel_dimensions[0],
+      'Center Panel Height' => center_panel_dimensions[1] ,
+      'Center Panel Thickness' => panel_thickness
     }
-  end
+  end  
 
-  def total_side_length_in
-    (stile_in * 2) + (rail_in * 2)
-  end
-
-  def stile_in
-    # stile refers to the vertical side
-    height_in
+  def to_h
+    {
+      total: total_side_length_in,
+      stile: stile_in,
+      rail: rail_in,
+      panel_width: center_panel_dimensions[0],
+      panel_height: center_panel_dimensions[1]
+    }
   end
 
   def door_sq_ft
     (width_in / 12.0) * (height_in / 12.0)
   end
 
-  def rail_in
-    # rail refers to the horizontal side
-    width_in - (SIDE_WIDTH * 2) + (tenon_depth * 2)
-  end
+  class Collection < Array
 
-  def tenon_thickness
-    SIDE_THICKNESS / 3.to_f
-  end
+    attr_reader :dimensions, :calcs
 
-  def mortise_width
-    tenon_thickness
-  end
-
-  def tenon_depth
-    # mortise depth - 1/16 to allow for glue
-    mortise_depth - 1/16r.to_f
-  end
-
-  def mortise_depth
-    # 1/2 of side width
-
-    3/8r.to_f
-  end
-
-  def center_panel_thickness
-    # material should be same as tenon thickness
-    # subtract side width - mortise depth from perimeter + 1/16th for glue
-    mortise_width - 1/16r.to_f
-  end
-
-
-  def self.cabinet_widths
-    {
-      top:         [
-        16.5, 16.5, 16.5, 16.5,
-        12, 12, 12, 12,
-        13.5, 13.5,
-        18
-      ],
-      stove: [
-        14.5, 14.5,
-      ],
-      bottom:     [
-        16.5, 16.5, 16.5, 16.5,
-        18, 18, 18,
-        12, 12
-      ],
-      drawer:     [
-        18, 18, 18, 18,
-        16.5, 16.5, 16.5, 16.5,
-        24
-      ],
-      big_drawer:   [
-        18, 18
-      ]
-    }
-  end
-
-  def self.cabinet_heights
-    {
-      top: 30,
-      stove: 11.5,
-      bottom: 24,
-      drawer: 6, 
-      big_drawer: 12
-    }
-  end
-
-  def self.calc_door_size(type, nominal_width_in)
-    nominal_height_in = cabinet_heights[type]
-    width_in = nominal_width_in - 0.375
-    height_in = nominal_height_in - 0.375
-    {width_in: width_in, height_in: height_in}
-
-    # remove 1/8 from nominal in as current doors reflect this
-  end
-
-  def self.calc_kitchen
-    doors = []
-    cabinet_widths.each_pair do |type, widths|
-      widths.each do |width_in|
-        doors << self.new(**calc_door_size(type, width_in))
-      end
+    def initialize(dimensions)
+      super(dimensions.map {|d| calc(d)})
     end
-    puts "Total Linear Hardwood Inches: #{Fraction.new(doors.map(&:total_side_length_in).sum)}" 
+
+    def <<(d)
+      super(calc(d))
+    end
+
+    def side_materials
+      map(&:side_materials).flatten(1)
+    end
+
+    def panel_materials
+      map(&:panel_materials)
+    end
+
+    def total_side_linear_length_in
+      sum(&:total_side_length_in)
+    end
+
+    private
+
+    def calc(d)
+      ShakerCalc.new(height_in: d[0], width_in: d[1])
+    end
   end
 end
