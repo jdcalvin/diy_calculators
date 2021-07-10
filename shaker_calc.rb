@@ -34,14 +34,16 @@ class ShakerCalc
               :height_in, 
               :side_width, 
               :side_thickness,
-              :mortise_depth
+              :mortise_depth,
+              :label
 
-  def initialize(width_in:, height_in:, side_width: 2.0, side_thickness: 0.75, mortise_depth: 7/16r.to_f)
+  def initialize(width_in:, height_in:, side_width: 2.0, side_thickness: 0.75, mortise_depth: 7/16r.to_f, label: nil)
     @width_in = width_in.to_f
     @height_in = height_in.to_f
     @side_width = side_width.to_f
     @side_thickness = side_thickness.to_f
     @mortise_depth = mortise_depth.to_f
+    @label = label
   end
 
   def stile_in
@@ -151,12 +153,20 @@ class ShakerCalc
       super(calc(d))
     end
 
-    def side_materials
-      map(&:side_materials).flatten(1)
+    def side_materials(label: false)
+      map do |x|
+        arr = [x.side_materials]
+        arr.push(x.label) if label
+        arr
+      end
     end
 
-    def panel_materials
-      map(&:panel_materials)
+    def panel_materials(label: false)
+      map do |x|
+        arr = [x.panel_materials]
+        arr.push(x.label) if label
+        arr
+      end
     end
 
     def total_side_linear_length_in
@@ -166,7 +176,7 @@ class ShakerCalc
     private
 
     def calc(d)
-      ShakerCalc.new(height_in: d[0], width_in: d[1])
+      ShakerCalc.new(height_in: d[0], width_in: d[1], label: d[2])
     end
   end
 end
