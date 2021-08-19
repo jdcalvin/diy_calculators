@@ -54,10 +54,18 @@ class ShakerCalc
     width_in - (side_width * 2) + (tenon_length * 2)
   end
 
+  def panel_width
+    (rail_in - 1/8r).to_f
+  end
+
+  def panel_height
+    ((height_in - (side_width * 2) + tenon_length * 2) - 1/8r).to_f
+  end
+
   def center_panel_dimensions
     [
-      rail_in,
-      height_in - (side_width * 2) + (tenon_length * 2),
+      panel_width,
+      panel_height,
     ]
   end
 
@@ -76,6 +84,7 @@ class ShakerCalc
   def tenon_length
     # Typical joinery rules say to leave the tenon 1/16th shorter than mortise depth to allow for glue
     # However in my experience, this requirement is negligible and the finished piece shows a 1/8th variance in width otherwise
+    # I think I do want this reflected in the panel w/h
     mortise_depth
   end
 
@@ -139,6 +148,41 @@ class ShakerCalc
 
   def door_sq_ft
     (width_in / 12.0) * (height_in / 12.0)
+  end
+
+  class Exporter
+    attr_reader :collection
+    def initialize(collection)
+      @collection = collection
+    end
+
+    def sides
+      r = flat_map(collection.side_materials(label:true).dup, true)
+      csv_friendly(r)
+    end
+
+    def panels
+      r = flat_map(collection.panel_materials(label:true).dup)
+      csv_friendly(r)
+    end
+
+    private
+
+    def csv_friendly(array)
+      array.map {|x| x.join(", ")}.join("\n")
+    end
+
+    def flat_map(sets, flatten=false)
+      cuts = []
+      sets.each do |set|
+        label = set.pop
+        flat_set = flatten ? set[0] : set
+        flat_set.each do |dim|
+          cuts.push([dim[0], dim[1], label])
+        end
+      end
+      cuts
+    end
   end
 
   class Collection < Array
