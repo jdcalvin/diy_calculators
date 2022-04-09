@@ -55,6 +55,8 @@ class ShakerCalc
   end
 
   def panel_width
+    # subtracting 1/16th from each side
+    # to allow for expansion of panel
     (rail_in - 1/8r).to_f
   end
 
@@ -90,6 +92,20 @@ class ShakerCalc
 
   def total_side_length_in
     (stile_in * 2) + (rail_in * 2)
+  end
+
+  def stile_materials
+    [
+      side_width, stile_in,
+      side_with, stile_in
+    ].each_slice(2).to_a
+  end
+
+  def rail_materials
+    [
+      side_width, rail_in,
+      side_with, rail_in
+    ].each_slice(2).to_a
   end
 
   def side_materials
