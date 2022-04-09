@@ -112,43 +112,6 @@ RSpec.describe ShakerCalc do
     end
 
     it "#side_materials returns array of stile/rail materials dimensions" do
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       cuts = [
         [[[2.0, 30.0],    [2.0, 30.0],    [2.0, 14.75],   [2.0, 14.75]],  "U1"],
         [[[2.0, 11.5],    [2.0, 11.5],    [2.0, 11.75],   [2.0, 11.75]],  "U2"],
@@ -190,43 +153,6 @@ RSpec.describe ShakerCalc do
       ]
       expect(coll.side_materials(label:true)).to eq(cuts)
     end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     it "#panel_materials returns array of center panel dimensions" do
       panels = [
@@ -284,5 +210,4 @@ RSpec.describe ShakerCalc do
       expect(coll.total_side_linear_length_in).to eq 2772
     end
   end
-
 end
