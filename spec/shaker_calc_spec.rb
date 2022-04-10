@@ -25,13 +25,7 @@ RSpec.describe ShakerCalc do
 
       top_height, 17+7/8r, "U1",
       top_height, 17+7/8r, "U1",
-
-
-      # intentionally missing lazy susan door
-
-      # above oven cabinets
-      
-
+    
       # bottom cabinets
       bottom_height, 11+7/8r, "L1", # l1 right of stove
       bottom_height, 11+7/8r, "L1", # l2 right of stove
@@ -90,18 +84,17 @@ RSpec.describe ShakerCalc do
     ].each_slice(3).to_a
   end
 
-  describe "::Exporter" do
-    subject { ShakerCalc::Exporter.new(ShakerCalc::Collection.new(kitchen_cabinets))}
+  # describe "::Exporter" do
+  #   subject { ShakerCalc::Exporter.new(ShakerCalc::Collection.new(kitchen_cabinets))}
 
-    it "#sides" do
-      v = subject.sides
-    end
+  #   it "#sides" do
+  #     v = subject.sides
+  #   end
 
-    it "#panels" do
-      v = subject.panels
-    end
-  end
-
+  #   it "#panels" do
+  #     v = subject.panels
+  #   end
+  # end
 
   describe "::Collection" do
     let(:coll) { ShakerCalc::Collection.new(kitchen_cabinets) }

@@ -66,8 +66,6 @@ class QuikreteCalc
     
     # spaces greater than a ft should have
     # rebar going front to back
-
-    # 
   end
 
   def surface_sq_in
